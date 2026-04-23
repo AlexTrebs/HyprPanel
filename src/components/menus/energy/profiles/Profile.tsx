@@ -1,4 +1,4 @@
-import { bind, execAsync, Variable } from 'astal';
+import { execAsync } from 'astal';
 import { Gtk } from 'astal/gtk3';
 import GLib from 'gi://GLib';
 import { isPrimaryClick } from 'src/lib/events/mouse';
@@ -17,20 +17,12 @@ const GPU_MODE_LABELS: Record<GpuModeType, string> = {
     AsusMuxDgpu: 'MUX dGPU',
 };
 
-const currentGpuMode = Variable<string>('Unknown').poll(
-    3000,
-    'supergfxctl -g',
-    (out) => out.trim(),
-);
-
 export const GpuModes = (): JSX.Element => {
     return (
         <box className="menu-items-section" valign={Gtk.Align.FILL} vexpand vertical>
             {GPU_MODES.map((mode: GpuModeType) => (
                 <button
-                    className={bind(currentGpuMode).as(
-                        (active) => `power-profile-item ${active === mode ? 'active' : ''}`,
-                    )}
+                    className="power-profile-item"
                     onClick={(_, event) => {
                         if (isPrimaryClick(event)) {
                             execAsync([
