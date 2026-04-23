@@ -1,41 +1,54 @@
-import { bind } from 'astal';
+import { bind, execAsync, Variable } from 'astal';
 import { Gtk } from 'astal/gtk3';
-import AstalPowerProfiles from 'gi://AstalPowerProfiles?version=0.1';
+import GLib from 'gi://GLib';
 import { isPrimaryClick } from 'src/lib/events/mouse';
 import icons from 'src/lib/icons/icons';
-import { ProfileType } from './types';
+import { GpuModeType } from './types';
 
-export const PowerProfiles = (): JSX.Element => {
-    const powerProfilesService = AstalPowerProfiles.get_default();
-    const powerProfiles = powerProfilesService.get_profiles();
+const GPU_MODES: GpuModeType[] = ['Integrated', 'Hybrid', 'AsusMuxDgpu'];
+const GPU_MODE_ARGS: Record<GpuModeType, string> = {
+    Integrated: 'integrated',
+    Hybrid: 'hybrid',
+    AsusMuxDgpu: 'mux',
+};
+const GPU_MODE_LABELS: Record<GpuModeType, string> = {
+    Integrated: 'Integrated',
+    Hybrid: 'Hybrid',
+    AsusMuxDgpu: 'MUX dGPU',
+};
 
+const currentGpuMode = Variable<string>('Unknown').poll(
+    3000,
+    'supergfxctl -g',
+    (out) => out.trim(),
+);
+
+export const GpuModes = (): JSX.Element => {
     return (
         <box className="menu-items-section" valign={Gtk.Align.FILL} vexpand vertical>
-            {powerProfiles.map((powerProfile: AstalPowerProfiles.Profile) => {
-                const profileType = powerProfile.profile as ProfileType;
-
-                return (
-                    <button
-                        className={bind(powerProfilesService, 'activeProfile').as(
-                            (active) =>
-                                `power-profile-item ${active === powerProfile.profile ? 'active' : ''}`,
-                        )}
-                        onClick={(_, event) => {
-                            if (isPrimaryClick(event)) {
-                                powerProfilesService.activeProfile = powerProfile.profile;
-                            }
-                        }}
-                    >
-                        <box>
-                            <icon
-                                className="power-profile-icon"
-                                icon={icons.powerprofile[profileType] || icons.powerprofile.balanced}
-                            />
-                            <label className="power-profile-label" label={profileType} />
-                        </box>
-                    </button>
-                );
-            })}
+            {GPU_MODES.map((mode: GpuModeType) => (
+                <button
+                    className={bind(currentGpuMode).as(
+                        (active) => `power-profile-item ${active === mode ? 'active' : ''}`,
+                    )}
+                    onClick={(_, event) => {
+                        if (isPrimaryClick(event)) {
+                            execAsync([
+                                `${GLib.get_home_dir()}/.local/bin/supergfxctl-toggle.sh`,
+                                GPU_MODE_ARGS[mode],
+                            ]).catch(console.error);
+                        }
+                    }}
+                >
+                    <box>
+                        <icon
+                            className="power-profile-icon"
+                            icon={icons.asusctl.mode[mode] || 'processor-symbolic'}
+                        />
+                        <label className="power-profile-label" label={GPU_MODE_LABELS[mode]} />
+                    </box>
+                </button>
+            ))}
         </box>
     );
 };

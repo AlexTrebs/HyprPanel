@@ -69,6 +69,7 @@ export default {
         mode: {
             Integrated: 'processor-symbolic',
             Hybrid: 'controller-symbolic',
+            AsusMuxDgpu: 'video-display-symbolic',
         },
     },
     battery: {
