@@ -23,6 +23,15 @@ export const GpuModes = (): JSX.Element => {
             {GPU_MODES.map((mode: GpuModeType) => (
                 <button
                     className="power-profile-item"
+                    setup={(self) => {
+                        execAsync(['supergfxctl', '-g'])
+                            .then((out) => {
+                                if (out.trim() === mode) {
+                                    self.get_style_context().add_class('active');
+                                }
+                            })
+                            .catch(() => {});
+                    }}
                     onClick={(_, event) => {
                         if (isPrimaryClick(event)) {
                             execAsync([
