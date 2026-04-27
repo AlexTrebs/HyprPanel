@@ -60,7 +60,7 @@ export class GdkMonitorService {
         const tempUsedIds = new Set<number>();
         const monitorsToUse = validMonitors.length > 0 ? validMonitors : hyprlandMonitors;
 
-        return this._matchMonitor(
+        const result = this._matchMonitor(
             monitorsToUse,
             gdkMonitor,
             monitor,
@@ -68,6 +68,17 @@ export class GdkMonitorService {
             (mon, gdkMon) => this._matchMonitorKey(mon, gdkMon),
             tempUsedIds,
         );
+
+        // Model-key matching failed and the fallback GDK index isn't a valid Hyprland ID.
+        // Map by sorted order instead (GDK index 0 → lowest Hyprland ID, etc.).
+        if (result === monitor && !hyprlandMonitors.find((m) => m.id === result)) {
+            const sortedIds = hyprlandMonitors.map((m) => m.id).sort((a, b) => a - b);
+            if (monitor < sortedIds.length) {
+                return sortedIds[monitor];
+            }
+        }
+
+        return result;
     }
 
     /**
