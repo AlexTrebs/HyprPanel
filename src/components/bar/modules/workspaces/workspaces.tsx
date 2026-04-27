@@ -101,8 +101,18 @@ export const WorkspaceModule = ({ monitor }: WorkspaceModuleProps): JSX.Element 
                 monitorList,
             );
 
-            return workspacesToRender.map((wsId, index) => {
-                const wsName = workspaceList.find((ws) => ws.id === wsId)?.name;
+            const currentHyprMonitor = monitorList.find((m) => m.id === monitor);
+            const activeSpecialWs = currentHyprMonitor?.specialWorkspace ?? null;
+            const specialWsId = activeSpecialWs?.id;
+            const allWsIds =
+                specialWsId !== undefined && !workspacesToRender.includes(specialWsId)
+                    ? [...workspacesToRender, specialWsId]
+                    : workspacesToRender;
+
+            return allWsIds.map((wsId, index) => {
+                const wsName =
+                    workspaceList.find((ws) => ws.id === wsId)?.name ??
+                    (activeSpecialWs?.id === wsId ? activeSpecialWs.name : undefined);
                 const appIcons = displayApplicationIcons
                     ? getAppIcon(wsId, appIconOncePerWorkspace, {
                           iconMap: applicationIconMapping,
