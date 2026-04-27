@@ -83,7 +83,9 @@ export default ({
                             revealChild={false}
                             setup={(self: Revealer) => {
                                 App.connect('window-toggled', (_, window) => {
-                                    self.set_reveal_child(window.visible);
+                                    if (window.name === name) {
+                                        self.set_reveal_child(window.visible);
+                                    }
                                 });
                             }}
                             transitionType={transition}
