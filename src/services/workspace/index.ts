@@ -166,6 +166,10 @@ export class WorkspaceService {
         workspaceList: AstalHyprland.Workspace[],
         monitorList: AstalHyprland.Monitor[],
     ): boolean {
+        if (Object.keys(workspaceMonitorRules).length === 0) {
+            return true;
+        }
+
         const monitorNameMap: MonitorMap = {};
         const allWorkspaceInstances = workspaceList ?? [];
 
